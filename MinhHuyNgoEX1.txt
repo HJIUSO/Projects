@@ -1,0 +1,39 @@
+Name: Minh Huy Ngo
+
+Q11
+SELECT DISTINCT Supplier.SupplierID,Name,ContactName, Phone, City, State
+FROM AnimalOrder INNER JOIN Supplier ON AnimalOrder.SupplierID = Supplier.SupplierID
+INNER JOIN City ON Supplier.CityID = City.CityID
+WHERE YEAR(OrderDate) = 2007 AND MONTH(OrderDate) IN (1,2,3,4,5,6) AND State = 'KY' AND OrderID IS NOT NULL
+ORDER BY Name ASC;
+
+Q12
+SELECT TOP 1 WITH TIES Animal.AnimalID, Name, Category, Breed, Cost, ListPrice, AnimalOrder.OrderID, OrderDate
+FROM AnimalOrderItem INNER JOIN Animal ON Animal.AnimalID = AnimalOrderItem.AnimalID
+INNER JOIN AnimalOrder ON AnimalOrder.OrderID = AnimalOrderItem.OrderID
+WHERE YEAR(OrderDate) = 2007 AND MONTH(OrderDate) IN (1,2,3,4,5,6)
+ORDER BY Cost DESC;
+
+Q13
+SELECT Customer.CustomerID, FirstName, LastName, COUNT(SaleID) AS NumberOfSale 
+FROM Customer INNER JOIN Sale ON Customer.CustomerID = Sale.CustomerID
+INNER JOIN City ON City.CityID = Customer.CityID
+WHERE State = 'WI' AND MONTH(SaleDate) IN (7,8,9,10,11,12)
+GROUP BY Customer.CustomerID, FirstName, LastName
+HAVING COUNT(SaleID) > 2
+ORDER BY Count(SaleID) DESC;
+
+Q14
+SELECT Supplier.SupplierID, Name, Phone 
+FROM AnimalOrder RIGHT JOIN Supplier ON Supplier.SupplierID = AnimalOrder.SupplierID
+INNER JOIN City ON City.CityID = Supplier.CityID
+WHERE OrderID IS NULL;
+
+Q15
+SELECT OrderID, firstname, LastName, OrderDate, ReceiveDate, ShippingCost
+FROM AnimalOrder INNER JOIN Employee ON AnimalOrder.EmployeeID = Employee.EmployeeID
+WHERE MONTH(OrderDate) IN (1,2,3) AND YEAR(OrderDate) = 2007 AND ShippingCost >
+(SELECT AVG(ShippingCost)
+FROM AnimalOrder INNER JOIN Employee ON AnimalOrder.EmployeeID = Employee.EmployeeID
+WHERE MONTH(OrderDate) IN (1,2,3) AND YEAR(OrderDate) = 2007)
+ORDER BY ShippingCost DESC;

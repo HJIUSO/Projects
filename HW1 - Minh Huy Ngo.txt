@@ -1,0 +1,46 @@
+Qry1.
+SELECT AnimalID, Category, Breed, Registered, ListPrice
+FROM Animal
+WHERE Category = 'Cat' AND ListPrice >= 200.00 AND Registered NOT IN ('NULL')
+ORDER BY listPrice DESC;
+
+Qry2.
+Select EmployeeID, LastName +' '+ FirstName AS EmployeeName, Phone, ZipCode, Title, DateHired
+From Employee
+Where DateHired >= '07/01/2007' And DateHired < '08/01/2007' And Title = 'Animal Friend'
+Order By LastName ASC;
+
+Qry3.
+SELECT TOP 1 WITH TIES SalePrice, SaleID, Category, Breed, ListPrice
+FROM Animal INNER JOIN SaleAnimal ON Animal.AnimalID = SaleAnimal.AnimalID
+WHERE Category = 'Dog'
+ORDER BY SalePrice ASC;
+
+Qry4.
+SELECT CustomerID, LastName, FirstName, City, State
+FROM Customer INNER JOIN City ON City.CityID = Customer.CityID
+WHERE State IN ('CA','KY') and LEFT(City,1) = 'M'
+ORDER BY LastName, Firstname ASC;
+
+Qry5.
+SELECT COUNT(Category) AS NumberOfDogSold, SUM(SalePrice) AS TotalSales
+FROM Sale INNER JOIN SaleAnimal ON Sale.SaleID = SaleAnimal.SaleID
+		  INNER JOIN Animal ON Animal.AnimalID = SaleAnimal.AnimalID
+WHERE Category='Dog' AND MONTH(SaleDate) IN (4,5,6) AND YEAR(SaleDate) = '2007';
+
+Qry6.
+SELECT Animal.AnimalID, Name, Breed, Category, Color, Registered, ListPrice, SalePrice
+FROM Sale JOIN SaleAnimal ON Sale.SaleID = SaleAnimal.SaleID
+		  JOIN Animal ON Animal.AnimalID = SaleAnimal.AnimalID
+WHERE Registered NOT IN ('NULL') AND SalePrice >= 125.00
+AND Color LIKE '%White%' AND Category = 'Cat' AND MONTH(SaleDate) IN (1,2,3) AND YEAR(SaleDate) = '2007'
+ORDER BY SalePrice DESC;
+
+Qry7.
+SELECT DISTINCT Customer.CustomerID, Customer.LastName, Customer.FirstName, Phone
+FROM City JOIN Customer ON City.CityID = Customer.CityID
+          JOIN Sale ON Customer.CustomerID = Sale.CustomerID
+		  JOIN SaleAnimal ON Sale.SaleID = SaleAnimal.SaleID
+		  JOIN Animal ON Animal.AnimalID = SaleAnimal.AnimalID
+WHERE State IN ('KY','WI') AND Category = 'Dog' AND SaleDate >= '01/01/2007' AND SaleDate < '06/16/2007'
+ORDER BY Customer.LastName ASC, Customer.FirstName ASC;

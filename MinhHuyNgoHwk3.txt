@@ -1,0 +1,173 @@
+--Drop Table
+--DROP TABLE ProductAdCampaignMix
+IF OBJECT_ID('dbo.ProductAdCampaignMix','U') IS NOT NULL
+DROP TABLE ProductAdCampaignMix;
+
+--DROP TABLE ProductAdCampaign
+IF OBJECT_ID('dbo.ProductAdCampaign','U') IS NOT NULL
+DROP TABLE ProductAdCampaign;
+
+--DROP TABLE ClientProduct
+IF OBJECT_ID('dbo.ClientProduct','U') IS NOT NULL
+DROP TABLE ClientProduct;
+
+--DROP TABLE Client
+IF OBJECT_ID('dbo.Client','U') IS NOT NULL
+DROP TABLE Client;
+
+--DROP TABLE AdMode
+IF OBJECT_ID('dbo.AdMode','U') IS NOT NULL
+DROP TABLE AdMode;
+
+--DROP TABLE AdMedia
+IF OBJECT_ID('dbo.AdMedia','U') IS NOT NULL
+DROP TABLE AdMedia;
+
+--DROP TABLE AdcampaignRange
+IF OBJECT_ID('dbo.AdcampaignRange','U') IS NOT NULL
+DROP TABLE AdcampaignRange;
+
+--DROP TABLE ADLanguage
+IF OBJECT_ID('dbo.ADLanguage','U') IS NOT NULL
+DROP TABLE ADLanguage
+
+--DROP TABLE Employee
+IF OBJECT_ID('dbo.Employee','U') IS NOT NULL
+DROP TABLE Employee;
+
+--Create Table
+
+CREATE TABLE Employee 
+(
+EmpID INT NOT NULL PRIMARY KEY IDENTITY(1001,1),
+EmpFName VARCHAR(25) NOT NULL,
+EmpLName VARCHAR(25) NOT NULL,
+EmpMInit CHAR(1) NULL,
+EmpPhone VARCHAR(15) NOT NULL,
+);
+
+INSERT INTO Employee
+VALUES ('Minh','Ngo',NULL, '(512)470-9728');
+SELECT * FROM Employee;
+
+CREATE TABLE ADLanguage
+(
+LanguageID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+Language VARCHAR(25) NOT NULL CHECK(Language IN ('English','Spanish'))
+);
+
+INSERT INTO ADLanguage
+VALUES ('English');
+SELECT * FROM ADLanguage;
+
+CREATE TABLE AdcampaignRange
+(
+RangeID CHAR(1) NOT NULL PRIMARY KEY CHECK(RangeID IN ('L','N')),
+RangeType VARCHAR(20) NOT NULL CHECK(RangeType IN ('Local','National')),
+CONSTRAINT CK_RangeType CHECK (RangeID IN ('L') AND RangeType IN ('Local') OR RangeID IN ('N') AND RangeType IN ('National'))
+);
+
+INSERT INTO AdcampaignRange
+VALUES ('L','Local');
+SELECT * FROM AdcampaignRange
+
+CREATE TABLE AdMedia
+(
+MediaID CHAR(1) NOT NULL PRIMARY KEY CHECK (MediaID IN ('T','R','O','P')),
+Media VARCHAR(20) NOT NULL CHECK (Media IN ('TV','Radio','Online','Print')),
+CONSTRAINT CK_Media CHECK (MediaID IN ('T') AND Media IN ('TV') 
+OR MediaID IN ('R') AND Media IN ('Radio')
+OR MediaID IN ('O') AND Media IN ('Online')
+OR MediaID IN ('P') AND Media IN ('Print'))
+);
+
+INSERT INTO AdMedia
+VALUES ('T','TV');
+SELECT * FROM AdMedia;
+
+
+CREATE TABLE AdMode
+(
+ModeID INT NOT NULL PRIMARY KEY, 
+LanguageID INT NOT NULL REFERENCES ADLanguage(LanguageID),
+MediaID CHAR(1) NOT NULL REFERENCES AdMedia(MediaID),
+RangeID CHAR(1) NOT NULL  REFERENCES AdcampaignRange(RangeID),
+);
+
+SET IDENTITY_INSERT dbo.ADLanguage ON;
+INSERT INTO AdMode
+VALUES (1,1,'T','L');
+SELECT * FROM AdMode;
+SET IDENTITY_INSERT dbo.ADLanguage OFF;
+
+CREATE TABLE Client 
+(
+ClientID INT NOT NULL PRIMARY KEY IDENTITY(1001,1),
+ClientName VARCHAR(125) NOT NULL,
+ClientCity VARCHAR(25) NOT NULL,
+ClientState VARCHAR(2) NOT NULL,
+ClientZipCode VARCHAR(15) NOT NULL,
+ClientAreaCode VARCHAR(3) NOT NULL,
+ClientPhone VARCHAR(8) NOT NULL,
+ClientWebAdress VARCHAR(200) NULL
+);
+
+INSERT INTO Client
+VALUES ('Jack','Austin','TX','78742','512','232-2412',NULL);
+SELECT * FROM Client;
+
+
+CREATE TABLE ClientProduct
+(
+ProductID INT NOT NULL PRIMARY KEY IDENTITY(1001,1),
+ProductName VARCHAR(125) NOT NULL,
+ProductCategory VARCHAR(125) NOT NULL,
+ProductBrand VARCHAR(125) NOT NULL,
+ProductListPrice MONEY NOT NULL CHECK(ProductListPrice >=0),
+ClientID INT NOT NULL REFERENCES Client(ClientID)
+);
+
+SET IDENTITY_INSERT dbo.Client ON;
+
+INSERT INTO ClientProduct
+VALUES ('Cumin','Spices','Lord of Spices', 35, 1001)
+SELECT * FROM ClientProduct;
+
+SET IDENTITY_INSERT dbo.Client OFF;
+SET IDENTITY_INSERT dbo.Employee ON;
+
+CREATE TABLE ProductAdCampaign
+(
+AdCampaignID INT NOT NULL PRIMARY KEY IDENTITY(1001,1),
+AdCampaignName VARCHAR(150) NOT NULL,
+AdCampaignDurationMonths INT NOT NULL CHECK(AdCampaignDurationMonths >=0),
+AdcampaignBudget MONEY NOT NULL CHECK(AdcampaignBudget >=10000),
+AdcampaignMgrID INT NULL REFERENCES Employee(EmpID),
+ProductID INT NOT NULL REFERENCES ClientProduct(ProductID)
+);
+
+INSERT INTO ProductAdCampaign
+VALUES ('Mayback',12,80000,1001,1001);
+SELECT* FROM ProductAdCampaign
+
+SET IDENTITY_INSERT dbo.Employee OFF;
+SET IDENTITY_INSERT dbo.ClientProduct OFF;
+
+CREATE NONCLUSTERED INDEX IX_EmpID_AdcampaignMgrID ON Employee(EmpID);
+CREATE NONCLUSTERED INDEX IX_ProductID_ClientProduct ON ClientProduct(ProductID);
+
+CREATE TABLE ProductAdCampaignMix
+(
+AdCampaignID INT NOT NULL REFERENCES ProductAdCampaign(AdcampaignID),
+ModeID INT NOT NULL REFERENCES AdMode(ModeID),
+BudgetPercent Numeric(6,2) NOT NULL CHECK(BudgetPercent BETWEEN 0 AND 100),
+PRIMARY KEY(AdCampaignID,ModeID)
+);
+SET IDENTITY_INSERT dbo.ProductAdCampaign ON;
+
+INSERT INTO ProductAdCampaignMix
+VALUES (1001,1,63)
+SELECT * FROM ProductAdCampaignMix
+SET IDENTITY_INSERT dbo.ProductAdCampaign OFF;
+
+

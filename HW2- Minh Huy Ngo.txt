@@ -1,0 +1,53 @@
+Qry1.
+SELECT COUNT(DISTINCT Category) AS CategoriesOfPetSold
+FROM Animal INNER JOIN SaleAnimal ON Animal.AnimalID = SaleAnimal.AnimalID
+			INNER JOIN Sale ON SaleAnimal.SaleID = Sale.SaleID
+WHERE MONTH(SaleDate) IN (10,11,12) AND YEAR(SaleDate) = '2007';
+
+Qry2.
+SELECT Animal.AnimalID, Category,Breed, Cost, SalePrice, (SalePrice - Cost) AS Profit 
+FROM AnimalOrderItem JOIN SaleAnimal ON SaleAnimal.AnimalID = AnimalOrderItem.AnimalID
+					 JOIN Animal ON Animal.AnimalID = SaleAnimal.AnimalID 
+					 JOIN Sale ON Sale.SaleID = SaleAnimal.SaleID
+WHERE SalePrice > Cost*2 AND MONTH(SaleDate) IN (7,8,9,10,11,12) AND Category = 'Cat'
+ORDER BY Profit DESC;
+
+Qry3.
+SELECT Category, COUNT(Category) AS NumOfAnimalSold
+FROM Animal JOIN SaleAnimal ON Animal.AnimalID = SaleAnimal.AnimalID
+			JOIN Sale ON Sale.SaleID = SaleAnimal.SaleID
+WHERE MONTH(SaleDate) IN (1,2,3,4,5,6) AND YEAR(SaleDate) = '2007'
+GROUP BY Category
+HAVING COUNT(*) >= 5
+ORDER BY NumOfAnimalSold DESC;
+
+Qry4.
+SELECT DISTINCT Employee.EmployeeID, FirstName, LastName, EmployeeLevel
+FROM  MerchandiseOrder  JOIN Employee ON MerchandiseOrder.EmployeeID = Employee.EmployeeID
+					  JOIN Supplier ON Supplier.SupplierID = MerchandiseOrder.SupplierID
+					  JOIN City ON City.CityID = Supplier.CityID
+WHERE Employee.EmployeeID NOT IN (SELECT Employee.EmployeeID FROM MerchandiseOrder  JOIN Employee ON MerchandiseOrder.EmployeeID = Employee.EmployeeID
+					  JOIN Supplier ON Supplier.SupplierID = MerchandiseOrder.SupplierID
+					  JOIN City ON City.CityID = Supplier.CityID WHERE State = 'KY')
+
+Qry5.
+SELECT Animal.AnimalID, Category, Breed, Gender, SalePrice
+FROM Animal JOIN SaleAnimal ON Animal.AnimalID = SaleAnimal.AnimalID
+		JOIN Sale ON Sale.SaleID = SaleAnimal.SaleID
+WHERE Category = 'Dog' AND MONTH(SaleDate) IN (10,11,12) AND YEAR(SaleDate) = '2007' 
+	AND SalePrice > (SELECT AVG(SalePrice) FROM SaleAnimal JOIN Animal ON Animal.AnimalID = SaleAnimal.AnimalID JOIN Sale ON Sale.SaleID = SaleAnimal.AnimalID
+	WHERE Category = 'Dog' AND MONTH(SaleDate) IN (1,2,3) AND YEAR(SaleDate) ='2007')
+ORDER BY SalePrice DESC;
+
+Qry6.
+SELECT TOP 1 WITH TIES SUM(SalePrice) AS TotalSaleGenerated, Category, Breed, AVG(SalePrice) AS AvgPrice
+FROM Sale JOIN SaleAnimal ON Sale.SaleID = SaleAnimal.SaleID
+		JOIN Animal ON SaleAnimal.AnimalID = Animal.AnimalID
+WHERE MONTH(SaleDate) IN (1,2,3) AND YEAR(SaleDate) ='2007' AND Category = 'Cat'
+GROUP BY Breed,Category
+ORDER BY SUM(SalePrice) DESC;
+
+Qry7.
+SELECT Employee.EmployeeID, FirstName, LastName, EmployeeLevel
+FROM Employee LEFT JOIN AnimalOrder ON Employee.EmployeeID = AnimalOrder.EmployeeID
+WHERE OrderID IS NULL;
